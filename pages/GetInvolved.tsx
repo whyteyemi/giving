@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../services/supabaseClient';
+import { apiService } from '../services/apiService';
 
 const GetInvolved: React.FC = () => {
     const navigate = useNavigate();
@@ -18,11 +18,7 @@ const GetInvolved: React.FC = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            const { error } = await supabase
-                .from('volunteer_applications')
-                .insert([formData]);
-
-            if (error) throw error;
+            await apiService.submitVolunteerApplication(formData);
             setSubmitted(true);
         } catch (error: any) {
             alert('Submission failed: ' + error.message);

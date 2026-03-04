@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { Profile, supabase } from '../services/supabaseClient';
+import { Profile } from '../services/supabaseClient';
 
 const UserProfile: React.FC = () => {
     const { user, profile, updateProfile, loading: authLoading } = useAuth();
@@ -33,24 +33,12 @@ const UserProfile: React.FC = () => {
         setLoading(true);
         setMessage(null);
 
-        // Handle Password Update if provided
+        // Password changes are handled via the "Forgot Password" flow.
+        // (We intentionally avoid in-session password changes on cPanel PHP to keep auth simple.)
         if (passwordData.newPassword) {
-            if (passwordData.newPassword !== passwordData.confirmPassword) {
-                setMessage({ type: 'error', text: 'Passwords do not match' });
-                setLoading(false);
-                return;
-            }
-            if (passwordData.newPassword.length < 6) {
-                setMessage({ type: 'error', text: 'Password must be at least 6 characters' });
-                setLoading(false);
-                return;
-            }
-            const { error } = await supabase.auth.updateUser({ password: passwordData.newPassword });
-            if (error) {
-                setMessage({ type: 'error', text: 'Failed to update password: ' + error.message });
-                setLoading(false);
-                return;
-            }
+            setMessage({ type: 'error', text: 'To change your password, please use the Forgot Password option on the login screen.' });
+            setLoading(false);
+            return;
         }
 
         const { error } = await updateProfile(formData);

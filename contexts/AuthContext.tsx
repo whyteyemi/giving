@@ -51,20 +51,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             try {
                 const userData = JSON.parse(storedUser);
                 setUser(userData);
-                setProfile(userData); // In PHP API, profile and user are often the same record
+                setProfile(userData);
             } catch (e) {
                 localStorage.removeItem('giving_user');
             }
         }
-        setLoading(false);
-    }, []);
+
+        // If we have a token, refresh from API (prevents stale role/fields)
+        refreshProfile().finally(() => setLoading(false));
+    }, [refreshProfile]);
 
     const refreshProfile = useCallback(async () => {
-        // Implementation for PHP would involve a get_me action
-        // For now, we rely on the login data
+        try {
+            const token = localStorage.getItem('giving_token');
+            if (!token) return;
+            const res = await apiService.get('get_me');
+            if (res?.user) {
+                setUser(res.user);
+                setProfile(res.user);
+                localStorage.setItem('giving_user', JSON.stringify(res.user));
+            }
+        } catch (_) {
+            // If token is invalid, force logout
+            localStorage.removeItem('giving_token');
+            localStorage.removeItem('giving_user');
+            setUser(null);
+            setProfile(null);
+        }
     }, []);
 
-    const isAdminFlag = profile?.role === 'admin' || user?.email === 'osabiyemi@yahoo.com';
+    const isAdminFlag = profile?.role === 'admin';
 
     async function signUp(email: string, password: string, fullName: string) {
         try {
@@ -82,6 +98,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setUser(res.user);
             setProfile(res.user);
             localStorage.setItem('giving_user', JSON.stringify(res.user));
+            if (res.token) {
+                localStorage.setItem('giving_token', res.token);
+            }
             setLoading(false);
             return { error: null };
         } catch (e: any) {
@@ -94,6 +113,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(null);
         setProfile(null);
         localStorage.removeItem('giving_user');
+        localStorage.removeItem('giving_token');
     }
 
     async function resetPassword(email: string) {
@@ -118,8 +138,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     async function updateProfile(updates: Partial<Profile>) {
-        // Custom PHP update profile would be needed
-        return { error: new Error('Update profile via PHP not yet implemented') };
+        try {
+            const res = await apiService.post('update_me', updates);
+            if (res?.user) {
+                setUser(res.user);
+                setProfile(res.user);
+                localStorage.setItem('giving_user', JSON.stringify(res.user));
+            }
+            return { error: null };
+        } catch (e: any) {
+            return { error: e };
+        }
     }
 
     const value = {
@@ -138,7 +167,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isAdmin: isAdminFlag,
         isStaff: profile?.role === 'staff',
         isVolunteer: profile?.role === 'volunteer',
-        isTeamMember: ['admin', 'staff', 'volunteer'].includes(profile?.role || '') || user?.email === 'osabiyemi@yahoo.com'
+        isTeamMember: ['admin', 'staff', 'volunteer'].includes(profile?.role || '')
     };
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -1,9 +1,21 @@
 
-const API_URL = '/api.php'; // Path to your api.php on cPanel/XAMPP
+const API_BASE = import.meta.env.VITE_API_BASE || '';
+const API_URL = `${API_BASE}/api.php`; // cPanel: keep api.php in web root (or set VITE_API_BASE)
+
+function getAuthToken(): string {
+    return localStorage.getItem('giving_token') || '';
+}
+
+function withAuth(headers: Record<string, string> = {}) {
+    const token = getAuthToken();
+    return token ? { ...headers, Authorization: `Bearer ${token}` } : headers;
+}
 
 export const apiService = {
     async get(action: string) {
-        const response = await fetch(`${API_URL}?action=${action}`);
+        const response = await fetch(`${API_URL}?action=${action}`, {
+            headers: withAuth()
+        });
         if (!response.ok) {
             let msg = `API request failed (${response.status})`;
             try {
@@ -21,7 +33,7 @@ export const apiService = {
     async post(action: string, data: any) {
         const response = await fetch(`${API_URL}?action=${action}`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: withAuth({ 'Content-Type': 'application/json' }),
             body: JSON.stringify(data)
         });
         if (!response.ok) {
@@ -44,6 +56,7 @@ export const apiService = {
         formData.append('file', file);
         const response = await fetch(`${API_URL}?action=upload_media`, {
             method: 'POST',
+            headers: withAuth(),
             body: formData
         });
 
@@ -74,6 +87,8 @@ export const apiService = {
     async forgotPassword(email: string) { return this.post('forgot_password', { email }); },
     async updatePassword(token: string, password: string) { return this.post('reset_password', { token, password }); },
 
+    async submitVolunteerApplication(formData: any) { return this.post('submit_volunteer_application', formData); },
+
     async createEvent(eventData: any) { return this.post('add_event', eventData); },
     async deleteEvent(id: string) { return this.post('delete_event', { id }); },
     async addEventMedia(mediaData: any) { return this.post('add_event_media', mediaData); },
@@ -87,9 +102,9 @@ export const apiService = {
 
     // Donation methods (uses donate.php)
     async donatePost(action: string, data: any) {
-        const response = await fetch(`/donate.php?action=${action}`, {
+        const response = await fetch(`${API_BASE}/donate.php?action=${action}`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: withAuth({ 'Content-Type': 'application/json' }),
             body: JSON.stringify(data)
         });
         if (!response.ok) {
@@ -107,12 +122,14 @@ export const apiService = {
     },
     async initializeTransaction(data: any) { return this.donatePost('initialize_transaction', data); },
     async verifyTransaction(reference: string) {
-        const response = await fetch(`/donate.php?action=verify_transaction&reference=${reference}`);
+        const response = await fetch(`${API_BASE}/donate.php?action=verify_transaction&reference=${reference}`);
         if (!response.ok) throw new Error('Verification failed');
         return response.json();
     },
     async fetchDonations() {
-        const response = await fetch(`/donate.php?action=get_donations`);
+        const response = await fetch(`${API_BASE}/donate.php?action=get_donations`, {
+            headers: withAuth()
+        });
         if (!response.ok) throw new Error('Failed to fetch donations');
         return response.json();
     },

@@ -8,19 +8,21 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 3000,
       host: '0.0.0.0',
+      // Local dev: if you run PHP separately (e.g. XAMPP), set VITE_API_PROXY_TARGET.
+      // Production: no proxy needed (static dist + php endpoints are on same origin).
       proxy: {
         '/api.php': {
-          target: 'https://givingwithoutlimit.org.ng/api',
+          target: env.VITE_API_PROXY_TARGET || 'http://localhost',
           changeOrigin: true,
-          rewrite: (path) => path // keep path as-is
+          rewrite: (p) => p
         },
         '/donate.php': {
-          target: 'https://givingwithoutlimit.org.ng/api',
+          target: env.VITE_API_PROXY_TARGET || 'http://localhost',
           changeOrigin: true,
-          rewrite: (path) => path // keep path as-is
+          rewrite: (p) => p
         },
         '/uploads': {
-          target: 'https://givingwithoutlimit.org.ng/api',
+          target: env.VITE_API_PROXY_TARGET || 'http://localhost',
           changeOrigin: true,
         }
       }

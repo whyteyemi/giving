@@ -1,0 +1,15 @@
+# Place this as /uploads/.htaccess on cPanel
+# Prevent PHP execution in uploads
+<FilesMatch "\.(php|phtml|php3|php4|php5|phar)$">
+  Deny from all
+</FilesMatch>
+
+# Basic caching
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType image/jpeg "access plus 30 days"
+  ExpiresByType image/png "access plus 30 days"
+  ExpiresByType image/webp "access plus 30 days"
+  ExpiresByType image/gif "access plus 30 days"
+  ExpiresByType video/mp4 "access plus 30 days"
+</IfModule>
