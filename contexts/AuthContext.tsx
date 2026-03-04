@@ -44,23 +44,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [loading, setLoading] = useState(true);
     const [authError, setAuthError] = useState<string | null>(null);
 
-    // Initial check on mount
-    useEffect(() => {
-        const storedUser = localStorage.getItem('giving_user');
-        if (storedUser) {
-            try {
-                const userData = JSON.parse(storedUser);
-                setUser(userData);
-                setProfile(userData);
-            } catch (e) {
-                localStorage.removeItem('giving_user');
-            }
-        }
-
-        // If we have a token, refresh from API (prevents stale role/fields)
-        refreshProfile().finally(() => setLoading(false));
-    }, [refreshProfile]);
-
     const refreshProfile = useCallback(async () => {
         try {
             const token = localStorage.getItem('giving_token');
@@ -79,6 +62,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setProfile(null);
         }
     }, []);
+
+    // Initial check on mount
+    useEffect(() => {
+        const storedUser = localStorage.getItem('giving_user');
+        if (storedUser) {
+            try {
+                const userData = JSON.parse(storedUser);
+                setUser(userData);
+                setProfile(userData);
+            } catch (e) {
+                localStorage.removeItem('giving_user');
+            }
+        }
+
+        // If we have a token, refresh from API (prevents stale role/fields)
+        refreshProfile().finally(() => setLoading(false));
+    }, [refreshProfile]);
 
     const isAdminFlag = profile?.role === 'admin';
 
