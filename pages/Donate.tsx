@@ -21,8 +21,8 @@ const CheckoutForm: React.FC<{
     setError(null);
 
     const numAmount = parseFloat(amount);
-    if (isNaN(numAmount) || numAmount < 1) {
-      setError('Please enter a valid donation amount (minimum $1).');
+    if (isNaN(numAmount) || numAmount < 100) {
+      setError('Please enter a valid donation amount (minimum ₦100).');
       return;
     }
     if (!firstName.trim() || !lastName.trim() || !email.trim()) {
@@ -115,7 +115,7 @@ const CheckoutForm: React.FC<{
             REDIRECTING...
           </span>
         ) : (
-          `PROCEED TO PAY $${parseFloat(amount) > 0 ? parseFloat(amount).toFixed(2) : '0.00'}`
+          `PROCEED TO PAY ₦${parseFloat(amount) > 0 ? parseFloat(amount).toFixed(2) : '0.00'}`
         )}
       </button>
 
@@ -147,15 +147,15 @@ const Donate: React.FC = () => {
     }
   }, [location]);
 
-  const presetAmounts = ['25', '50', '100', '250', '500'];
+  const presetAmounts = ['5000', '10000', '20000', '50000', '100000'];
 
   const getImpactMessage = (val: string) => {
     const num = parseInt(val);
-    if (isNaN(num)) return "Every dollar makes a difference.";
-    if (num < 50) return `Your donation of $${num} can provide meals for ${Math.floor(num / 5)} children.`;
-    if (num < 100) return `Your donation of $${num} provides school supplies for 2 students.`;
-    if (num < 250) return `Your donation of $${num} funds a weekly widow support package.`;
-    return `Your donation of $${num} sponsors a child's full educational needs for a term.`;
+    if (isNaN(num)) return "Every naira makes a difference.";
+    if (num < 10000) return `Your donation of ₦${num.toLocaleString()} can provide meals for children in need.`;
+    if (num < 50000) return `Your donation of ₦${num.toLocaleString()} can provide supplies and support for families.`;
+    if (num < 150000) return `Your donation of ₦${num.toLocaleString()} can fund a widow support package.`;
+    return `Your donation of ₦${num.toLocaleString()} can sponsor a child’s educational needs.`;
   };
 
   return (
@@ -250,11 +250,11 @@ const Donate: React.FC = () => {
                       onClick={() => setAmount(val)}
                       className={`py-4 rounded-xl font-bold border-2 transition-all ${amount === val ? 'border-primary bg-primary/5 text-primary' : 'border-gray-200 text-gray-500 hover:border-gold'}`}
                     >
-                      ${val}
+                      ₦{val}
                     </button>
                   ))}
                   <div className="relative col-span-1">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">$</span>
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">₦</span>
                     <input
                       type="number"
                       placeholder="Other"
