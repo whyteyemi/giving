@@ -69,10 +69,13 @@ function gwl_paystack_initialize($pdo, $config, $data) {
   $reference = bin2hex(random_bytes(10));
   $amountKobo = $amountNgnRounded * 100;
 
+  $callbackUrl = rtrim((string)($config['APP_URL'] ?? ''), '/') . '/donate';
+
   $payload = [
     'email' => $email,
     'amount' => $amountKobo,
     'reference' => $reference,
+    'callback_url' => $callbackUrl,
     'metadata' => [
       'first_name' => (string)$data['first_name'],
       'last_name' => (string)$data['last_name'],

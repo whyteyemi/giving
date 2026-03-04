@@ -136,14 +136,42 @@ const Donate: React.FC = () => {
   const [frequency, setFrequency] = useState<'one-time' | 'monthly'>('one-time');
   const [program, setProgram] = useState('General Fund (Most Needed)');
 
+  // Paystack callback handling
+  const [verifyLoading, setVerifyLoading] = useState(false);
+  const [verifyResult, setVerifyResult] = useState<{ ok: boolean; message: string } | null>(null);
+
   useEffect(() => {
     const params = new URLSearchParams(location.search);
+
+    // Program preselect
     const selectedProgram = params.get('program');
     if (selectedProgram) {
       setProgram(selectedProgram);
       setTimeout(() => {
         window.scrollTo({ top: 300, behavior: 'smooth' });
       }, 100);
+    }
+
+    // Paystack redirects back with ?reference=xxxx
+    const reference = params.get('reference');
+    if (reference) {
+      setVerifyLoading(true);
+      apiService
+        .verifyTransaction(reference)
+        .then((res) => {
+          if (res?.success || res?.status === 'success') {
+            setVerifyResult({ ok: true, message: 'Payment successful. Thank you for your donation!' });
+          } else {
+            setVerifyResult({ ok: false, message: res?.message || 'Payment verification failed.' });
+          }
+        })
+        .catch((e: any) => {
+          setVerifyResult({ ok: false, message: e?.message || 'Payment verification failed.' });
+        })
+        .finally(() => setVerifyLoading(false));
+
+      // Scroll to top so user sees the result
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }, [location]);
 
@@ -160,6 +188,34 @@ const Donate: React.FC = () => {
 
   return (
     <div className="pt-20 bg-gray-50 min-h-screen">
+      {(verifyLoading || verifyResult) && (
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+          <div
+            className={`rounded-2xl p-5 border ${verifyLoading
+              ? 'bg-blue-50 border-blue-200 text-blue-800'
+              : verifyResult?.ok
+                ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+                : 'bg-red-50 border-red-200 text-red-800'
+              }`}
+          >
+            {verifyLoading ? (
+              <div className="flex items-center gap-3">
+                <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                <span className="font-semibold">Verifying your payment...</span>
+              </div>
+            ) : (
+              <div className="flex items-start gap-3">
+                <i className={`fas ${verifyResult?.ok ? 'fa-check-circle' : 'fa-exclamation-triangle'} mt-0.5`}></i>
+                <div>
+                  <div className="font-bold">{verifyResult?.ok ? 'Payment Successful' : 'Payment Not Confirmed'}</div>
+                  <div className="text-sm mt-1">{verifyResult?.message}</div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
           {/* Left Column: Context & Inspiration */}
