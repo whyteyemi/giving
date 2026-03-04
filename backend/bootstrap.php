@@ -58,6 +58,7 @@ function gwl_error($message, $code = 400, $meta = null) {
 function gwl_db($config) {
   $host = $config['DB_HOST'] ?? '127.0.0.1';
   $db = $config['DB_NAME'] ?? '';
+  $port = (string)($config['DB_PORT'] ?? '');
   $user = $config['DB_USER'] ?? '';
   $pass = $config['DB_PASS'] ?? '';
 
@@ -65,7 +66,7 @@ function gwl_db($config) {
     gwl_error('Database configuration missing', 500);
   }
 
-  $dsn = 'mysql:host=' . $host . ';dbname=' . $db . ';charset=utf8mb4';
+  $dsn = 'mysql:host=' . $host . ($port ? ';port=' . $port : '') . ';dbname=' . $db . ';charset=utf8mb4';
   try {
     $pdo = new PDO($dsn, $user, $pass, [
       PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,

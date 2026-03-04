@@ -12,6 +12,7 @@ return [
   'CORS_ORIGINS' => getenv('CORS_ORIGINS') ?: '*',
 
   'DB_HOST' => getenv('DB_HOST') ?: '127.0.0.1',
+  'DB_PORT' => getenv('DB_PORT') ?: '',
   'DB_NAME' => getenv('DB_NAME') ?: 'giving',
   'DB_USER' => getenv('DB_USER') ?: 'giving_user',
   'DB_PASS' => getenv('DB_PASS') ?: 'CHANGE_ME',
