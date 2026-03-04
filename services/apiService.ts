@@ -105,8 +105,12 @@ export const apiService = {
         }
         return response.json();
     },
-    async createPaymentIntent(data: any) { return this.donatePost('create_payment_intent', data); },
-    async confirmDonation(paymentIntentId: string) { return this.donatePost('confirm_donation', { payment_intent_id: paymentIntentId }); },
+    async initializeTransaction(data: any) { return this.donatePost('initialize_transaction', data); },
+    async verifyTransaction(reference: string) {
+        const response = await fetch(`/donate.php?action=verify_transaction&reference=${reference}`);
+        if (!response.ok) throw new Error('Verification failed');
+        return response.json();
+    },
     async fetchDonations() {
         const response = await fetch(`/donate.php?action=get_donations`);
         if (!response.ok) throw new Error('Failed to fetch donations');

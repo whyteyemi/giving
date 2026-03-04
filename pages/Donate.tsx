@@ -1,62 +1,24 @@
-
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { loadStripe } from '@stripe/stripe-js';
-import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { apiService } from '../services/apiService';
 
-// ** IMPORTANT: Replace with your Stripe PUBLISHABLE key (pk_test_...) **
-// Get it from: https://dashboard.stripe.com/apikeys
-const stripePromise = loadStripe('pk_test_51T5Px7Cv0BsmAxMureeG4tN3jvIr0HSwD4QoQxaYb287lmQ36bxGwqxtDT8SzoC8IHYwHfPHuhh3hCqJTqME9u2300pAPObC5E');
-
 // =====================================================
-// CARD ELEMENT STYLING
-// =====================================================
-const CARD_ELEMENT_OPTIONS = {
-  style: {
-    base: {
-      fontSize: '16px',
-      color: '#1a2332',
-      fontFamily: '"Inter", sans-serif',
-      '::placeholder': { color: '#9ca3af' },
-      padding: '16px',
-    },
-    invalid: {
-      color: '#ef4444',
-      iconColor: '#ef4444',
-    },
-  },
-  hidePostalCode: false,
-};
-
-
-// =====================================================
-// CHECKOUT FORM (inside Stripe Elements provider)
+// PAYSTACK CHECKOUT FORM
 // =====================================================
 const CheckoutForm: React.FC<{
   amount: string;
   frequency: 'one-time' | 'monthly';
   program: string;
 }> = ({ amount, frequency, program }) => {
-  const stripe = useStripe();
-  const elements = useElements();
-
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
-  const [donationAmount, setDonationAmount] = useState(0);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-
-    if (!stripe || !elements) {
-      setError('Payment system is loading. Please wait...');
-      return;
-    }
 
     const numAmount = parseFloat(amount);
     if (isNaN(numAmount) || numAmount < 1) {
@@ -71,8 +33,8 @@ const CheckoutForm: React.FC<{
     setProcessing(true);
 
     try {
-      // Step 1: Create PaymentIntent on the server
-      const { clientSecret } = await apiService.createPaymentIntent({
+      // Step 1: Initialize Transaction on our backend
+      const response = await apiService.initializeTransaction({
         amount: numAmount,
         first_name: firstName,
         last_name: lastName,
@@ -81,69 +43,17 @@ const CheckoutForm: React.FC<{
         program: program,
       });
 
-      // Step 2: Confirm the payment with Stripe.js
-      const cardElement = elements.getElement(CardElement);
-      if (!cardElement) {
-        setError('Card input not found.');
-        setProcessing(false);
-        return;
-      }
-
-      const { error: stripeError, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
-        payment_method: {
-          card: cardElement as any,
-          billing_details: {
-            name: `${firstName} ${lastName}`,
-            email: email,
-          },
-        },
-      });
-
-      if (stripeError) {
-        setError(stripeError.message || 'Payment failed. Please try again.');
-        setProcessing(false);
-        return;
-      }
-
-      if (paymentIntent && paymentIntent.status === 'succeeded') {
-        // Step 3: Confirm on our backend
-        await apiService.confirmDonation(paymentIntent.id);
-        setDonationAmount(numAmount);
-        setSuccess(true);
+      if (response.status && response.authorization_url) {
+        // Step 2: Redirect to Paystack Checkout
+        window.location.href = response.authorization_url;
+      } else {
+        throw new Error(response.error || 'Failed to initialize payment.');
       }
     } catch (err: any) {
       setError(err.message || 'An unexpected error occurred.');
-    } finally {
       setProcessing(false);
     }
   };
-
-  // Success Screen
-  if (success) {
-    return (
-      <div className="text-center py-16 px-8">
-        <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-8 animate-bounce">
-          <i className="fas fa-check text-green-500 text-4xl"></i>
-        </div>
-        <h3 className="text-3xl font-bold text-primary mb-4">Thank You!</h3>
-        <p className="text-gray-600 text-lg mb-2">
-          Your donation of <span className="font-bold text-gold">${donationAmount.toFixed(2)}</span> has been received.
-        </p>
-        <p className="text-gray-400 text-sm mb-8">
-          Allocated to: <span className="font-semibold">{program}</span>
-        </p>
-        <p className="text-gray-500 italic text-sm max-w-md mx-auto">
-          "And do not forget to do good and to share with others, for with such sacrifices God is pleased." — Hebrews 13:16
-        </p>
-        <button
-          onClick={() => window.location.reload()}
-          className="mt-10 bg-primary text-white font-bold px-10 py-4 rounded-full hover:bg-secondary transition-all"
-        >
-          MAKE ANOTHER DONATION
-        </button>
-      </div>
-    );
-  }
 
   return (
     <form className="p-8 md:p-12 space-y-8" onSubmit={handleSubmit}>
@@ -175,16 +85,11 @@ const CheckoutForm: React.FC<{
         />
       </div>
 
-      {/* Stripe Card Element */}
-      <div>
-        <label className="block text-sm font-bold text-gray-700 mb-4">Card Details</label>
-        <div className="p-4 rounded-xl border-2 border-gray-200 focus-within:border-primary transition-colors bg-white">
-          <CardElement options={CARD_ELEMENT_OPTIONS} />
-        </div>
-        <p className="text-xs text-gray-400 mt-2 flex items-center">
-          <i className="fas fa-lock text-green-500 mr-2"></i>
-          Secured by Stripe — Your card details never touch our servers.
-        </p>
+      <div className="bg-blue-50 p-4 rounded-xl text-sm text-blue-800 border border-blue-100 flex items-start">
+        <i className="fas fa-info-circle mt-0.5 mr-3"></i>
+        <span>
+          You will be redirected to <strong>Paystack</strong> to securely complete your payment.
+        </span>
       </div>
 
       {/* Error Display */}
@@ -198,7 +103,7 @@ const CheckoutForm: React.FC<{
       {/* Submit Button */}
       <button
         type="submit"
-        disabled={!stripe || processing}
+        disabled={processing}
         className={`w-full font-bold py-6 rounded-2xl transition-all transform shadow-xl text-xl ${processing
           ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
           : 'bg-primary text-white hover:bg-secondary hover:scale-[1.02]'
@@ -207,15 +112,15 @@ const CheckoutForm: React.FC<{
         {processing ? (
           <span className="flex items-center justify-center gap-3">
             <div className="w-6 h-6 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
-            PROCESSING...
+            REDIRECTING...
           </span>
         ) : (
-          `DONATE $${parseFloat(amount) > 0 ? parseFloat(amount).toFixed(2) : '0.00'}`
+          `PROCEED TO PAY $${parseFloat(amount) > 0 ? parseFloat(amount).toFixed(2) : '0.00'}`
         )}
       </button>
 
-      <div className="text-center text-xs text-gray-400 mt-4">
-        <i className="fab fa-stripe mx-1 text-lg text-gray-500 align-middle"></i> Powered by Stripe
+      <div className="text-center text-xs text-gray-400 mt-4 flex items-center justify-center gap-2">
+        <i className="fas fa-lock text-green-500"></i> Secured by Paystack
       </div>
     </form>
   );
@@ -268,11 +173,11 @@ const Donate: React.FC = () => {
             <div className="space-y-6 mb-12">
               <div className="flex items-start bg-white p-6 rounded-2xl shadow-sm">
                 <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center text-primary shrink-0 mr-4">
-                  <i className="fas fa-check"></i>
+                  <i className="fas fa-shield-alt"></i>
                 </div>
                 <div>
                   <h4 className="font-bold text-primary">Secure Payments</h4>
-                  <p className="text-sm text-gray-500">Industry-standard encryption powered by Stripe.</p>
+                  <p className="text-sm text-gray-500">Fast, secure local and international processing via Paystack.</p>
                 </div>
               </div>
               <div className="flex items-start bg-white p-6 rounded-2xl shadow-sm">
@@ -315,7 +220,6 @@ const Donate: React.FC = () => {
               <div className="text-lg font-bold">{getImpactMessage(amount)}</div>
             </div>
 
-            {/* Amount & Frequency Controls (outside Stripe Elements) */}
             <div className="p-8 md:p-12 pb-0 space-y-8">
               {/* Frequency Toggle */}
               <div className="flex bg-gray-100 p-1 rounded-full">
@@ -379,10 +283,7 @@ const Donate: React.FC = () => {
               </div>
             </div>
 
-            {/* Stripe Elements Checkout Form */}
-            <Elements stripe={stripePromise}>
-              <CheckoutForm amount={amount} frequency={frequency} program={program} />
-            </Elements>
+            <CheckoutForm amount={amount} frequency={frequency} program={program} />
           </div>
         </div>
       </div>
