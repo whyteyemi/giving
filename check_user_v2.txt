@@ -1,0 +1,2 @@
+email	password_hash
+osabiyemi@yahoo.com	$2y$10$cAm0tbSMRqtEswB9PJQ2Juuuc3ICwSOQkILRpEW1fGJaIEDfRobxLi

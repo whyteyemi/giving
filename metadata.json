@@ -1,0 +1,7 @@
+{
+  "name": "Giving Without Limit",
+  "description": "A modern, compassionate web application for a Christian humanitarian NGO providing aid, rehabilitation, and empowerment to those in need.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}

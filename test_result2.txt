@@ -1,0 +1,11 @@
+=== DEBUG LOGIN TEST ===
+User found: osabiyemi@yahoo.com
+Role: admin
+Hash length: 60
+Hash (first 20): $2y$10$HDDJRHYOlflm/
+Hash starts with $2y$: YES
+password_verify('test123', hash): SUCCESS
+password_verify('password123', hash): FAIL
+
+Fresh hash for 'test123': $2y$10$XIvg/pFYK3jVGnpGplzZauU96S6VW471wHhxCgrjD9pGdVxnM1N6.
+Verify fresh hash: SUCCESS

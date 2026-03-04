@@ -1,0 +1,21 @@
+*************************** 1. row ***************************
+       Table: profiles
+Create Table: CREATE TABLE `profiles` (
+  `id` int(11) NOT NULL,
+  `name` varchar(255) DEFAULT NULL,
+  `role` varchar(50) DEFAULT 'User',
+  `state` varchar(100) DEFAULT NULL,
+  `town` varchar(100) DEFAULT NULL,
+  `location` varchar(255) DEFAULT NULL,
+  `gender` varchar(20) DEFAULT NULL,
+  `birth_month` varchar(20) DEFAULT NULL,
+  `birth_day` varchar(10) DEFAULT NULL,
+  `mobile_number` varchar(20) DEFAULT NULL,
+  `whatsapp_number` varchar(20) DEFAULT NULL,
+  `profile_photo` text DEFAULT NULL,
+  `subscription` varchar(50) DEFAULT 'Free',
+  `learning_progress` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`learning_progress`)),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  CONSTRAINT `profiles_ibfk_1` FOREIGN KEY (`id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
