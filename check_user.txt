@@ -1,2 +1,2 @@
-email	password_hash	role
-osabiyemi@yahoo.com		admin
+DB asa Error: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'email' in 'field list'
+DB giving Error: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'giving.profiles' doesn't exist

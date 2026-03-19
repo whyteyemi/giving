@@ -12,18 +12,19 @@ export default defineConfig(({ mode }) => {
       // Production: no proxy needed (static dist + php endpoints are on same origin).
       proxy: {
         '/api.php': {
-          target: env.VITE_API_PROXY_TARGET || 'http://localhost',
+          target: env.VITE_API_PROXY_TARGET || 'http://localhost:8000',
           changeOrigin: true,
-          rewrite: (p) => p
+          secure: false,
         },
         '/donate.php': {
-          target: env.VITE_API_PROXY_TARGET || 'http://localhost',
+          target: env.VITE_API_PROXY_TARGET || 'http://localhost:8000',
           changeOrigin: true,
-          rewrite: (p) => p
+          secure: false,
         },
         '/uploads': {
-          target: env.VITE_API_PROXY_TARGET || 'http://localhost',
+          target: env.VITE_API_PROXY_TARGET || 'http://localhost:8000',
           changeOrigin: true,
+          secure: false,
         }
       }
     },

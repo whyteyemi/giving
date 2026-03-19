@@ -101,5 +101,12 @@ export const TEAM: TeamMember[] = [
     bio: 'A Non-Executive Director with Nigeria’s leading pharmaceutical company, Fidson Healthcare Plc, bringing extensive corporate governance and healthcare industry experience to the board.',
     image: '/team/trustee_olufunmilayo.jpeg',
     location: 'Nigeria'
+  },
+  {
+    name: 'Mrs. Afusatu Bamigbose',
+    role: 'Board of Trustees',
+    bio: 'A professional realtor based in Evanston, Illinois, Canada, bringing valuable real estate expertise and dedication to the board of Giving Without Limit.',
+    image: '/team/trustee_afusatu.png',
+    location: 'Evanston, Illinois, Canada'
   }
 ];

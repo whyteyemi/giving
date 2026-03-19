@@ -2,8 +2,8 @@
 -- GIVING WITHOUT LIMIT - MYSQL DATABASE SCHEMA (asa)
 -- =====================================================
 
-CREATE DATABASE IF NOT EXISTS asa;
-USE asa;
+CREATE DATABASE IF NOT EXISTS `giving without limit`;
+USE `giving without limit`;
 
 -- 1. PROFILES TABLE
 -- Replaces Supabase Auth metadata + profiles table
