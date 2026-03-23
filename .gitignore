@@ -23,3 +23,26 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Backend credentials
+backend/config.php
+backend/log.txt
+
+# Temp debug files
+debug_impact.php
+check_all_tables.php
+check_php_v2.php
+check_user_role.php
+list_dbs.php
+cleanup_impact.php
+debug_out.txt
+check_out.txt
+processes.txt
+id_lengths.txt
+check_db_out.txt
+init_out.txt
+php_out.txt
+table_checks.txt
+tmp_errors.txt
+test_result.txt
+test_result2.txt

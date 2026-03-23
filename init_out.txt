@@ -1,2 +1,0 @@
-Schema created.
-Admin user setup completed. Password: Pass123$$
